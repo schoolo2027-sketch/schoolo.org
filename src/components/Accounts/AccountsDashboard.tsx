@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import StatCard from "@/components/dashboard/StatCard";
+import StatCard from "@/components/Dashboard/StatCard";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 import {
   Wallet, TrendingUp, TrendingDown, CalendarDays, Landmark, Coins,

@@ -20,9 +20,9 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import StatCard from "@/components/dashboard/StatCard";
-import AttendanceChart from "@/components/dashboard/AttendanceChart";
-import RecentNotices from "@/components/dashboard/RecentNotices";
+import StatCard from "@/components/Dashboard/StatCard";
+import AttendanceChart from "@/components/Dashboard/AttendanceChart";
+import RecentNotices from "@/components/Dashboard/RecentNotices";
 
 const TeacherDashboard = () => {
   const { profile, teacherPermissions, user } = useAuth();

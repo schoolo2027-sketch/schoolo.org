@@ -7,11 +7,11 @@ import {
   Users, GraduationCap, CreditCard, ClipboardCheck, School, Building2, UserCheck,
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import StatCard from "@/components/dashboard/StatCard";
-import AttendanceChart from "@/components/dashboard/AttendanceChart";
-import QuickActions from "@/components/dashboard/QuickActions";
-import RecentStudentsTable from "@/components/dashboard/RecentStudentsTable";
-import RecentNotices from "@/components/dashboard/RecentNotices";
+import StatCard from "@/components/Dashboard/StatCard";
+import AttendanceChart from "@/components/Dashboard/AttendanceChart";
+import QuickActions from "@/components/Dashboard/QuickActions";
+import RecentStudentsTable from "@/components/Dashboard/RecentStudentsTable";
+import RecentNotices from "@/components/Dashboard/RecentNotices";
 import StudentDashboard from "@/components/Dashboard/StudentDashboard";
 import TeacherDashboard from "@/components/Dashboard/TeacherDashboard";
 

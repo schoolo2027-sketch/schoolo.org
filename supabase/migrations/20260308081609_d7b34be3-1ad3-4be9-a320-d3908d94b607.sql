@@ -1,0 +1,8 @@
+
+ALTER TABLE public.teachers
+  ADD COLUMN IF NOT EXISTS can_manage_classes BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS can_manage_attendance BOOLEAN NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS can_manage_payments BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS can_view_reports BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS can_use_ai_tools BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS can_manage_settings BOOLEAN NOT NULL DEFAULT false;

@@ -1,0 +1,297 @@
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRealtimeSync } from "@/hooks/useRealtimeSync";
+import { useCanManageAccounts } from "@/hooks/useAccountsAccess";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Printer, Trash2, Wallet } from "lucide-react";
+import { toast } from "sonner";
+import { printPayslip } from "@/utils/payslipPrint";
+
+const currentMonth = () => new Date().toISOString().slice(0, 7);
+
+const SalaryTab = () => {
+  const { schoolId } = useAuth();
+  const canManage = useCanManageAccounts();
+  const qc = useQueryClient();
+  const [month, setMonth] = useState(currentMonth());
+  const [editing, setEditing] = useState<any>(null);
+
+  useRealtimeSync("salary_payments", [["salary-payments", schoolId ?? ""]]);
+
+  const { data: school } = useQuery({
+    queryKey: ["accounts-school", schoolId],
+    enabled: !!schoolId,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("get_school_info_safe", { _school_id: schoolId! });
+      return (data as any)?.[0] ?? null;
+    },
+  });
+
+  const { data: teachers = [] } = useQuery({
+    queryKey: ["salary-teachers", schoolId],
+    enabled: !!schoolId,
+    queryFn: async () => {
+      const { data } = await supabase.from("teachers").select("id, teacher_name, designation")
+        .eq("school_id", schoolId!).eq("is_active", true).order("teacher_name");
+      return data ?? [];
+    },
+  });
+
+  const { data: staff = [] } = useQuery({
+    queryKey: ["salary-staff", schoolId],
+    enabled: !!schoolId,
+    queryFn: async () => {
+      const { data } = await supabase.from("staff").select("id, staff_name, designation")
+        .eq("school_id", schoolId!).eq("is_active", true).order("staff_name");
+      return data ?? [];
+    },
+  });
+
+  const { data: accounts = [] } = useQuery({
+    queryKey: ["financial-accounts", schoolId],
+    enabled: !!schoolId,
+    queryFn: async () => {
+      const { data } = await supabase.from("financial_accounts").select("id, name")
+        .eq("school_id", schoolId!).is("deleted_at", null).eq("is_active", true).order("name");
+      return data ?? [];
+    },
+  });
+
+  const { data: rows = [] } = useQuery({
+    queryKey: ["salary-payments", schoolId, month],
+    enabled: !!schoolId,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("salary_payments").select("*")
+        .eq("school_id", schoolId!).eq("month", month).is("deleted_at", null)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const nameOf = (r: any) =>
+    r.teacher_id
+      ? (teachers as any[]).find((t) => t.id === r.teacher_id)?.teacher_name ?? "Teacher"
+      : (staff as any[]).find((s) => s.id === r.staff_id)?.staff_name ?? "Staff";
+
+  const designationOf = (r: any) =>
+    r.teacher_id
+      ? (teachers as any[]).find((t) => t.id === r.teacher_id)?.designation
+      : (staff as any[]).find((s) => s.id === r.staff_id)?.designation;
+
+  const totals = useMemo(() => {
+    const paid = rows.filter((r: any) => r.status === "paid");
+    return {
+      count: rows.length,
+      paid: paid.reduce((s: number, r: any) => s + Number(r.net || 0), 0),
+      pending: rows.filter((r: any) => r.status !== "paid").reduce((s: number, r: any) => s + Number(r.net || 0), 0),
+    };
+  }, [rows]);
+
+  const save = useMutation({
+    mutationFn: async (p: any) => {
+      if (!p.person) throw new Error("Select a teacher or staff member");
+      const [kind, id] = String(p.person).split(":");
+      const basic = Number(p.basic || 0);
+      const bonus = Number(p.bonus || 0);
+      const advance = Number(p.advance || 0);
+      const deduction = Number(p.deduction || 0);
+      const net = basic + bonus - advance - deduction;
+      if (net < 0) throw new Error("Net salary cannot be negative");
+
+      const payload: any = {
+        school_id: schoolId!,
+        teacher_id: kind === "t" ? id : null,
+        staff_id: kind === "s" ? id : null,
+        month: p.month || month,
+        basic, bonus, advance, deduction, net,
+        status: p.status || "pending",
+        account_id: p.account_id || null,
+        paid_on: p.status === "paid" ? (p.paid_on || new Date().toISOString().slice(0, 10)) : null,
+        notes: p.notes || null,
+      };
+      if (p.id) {
+        const { error } = await supabase.from("salary_payments").update(payload).eq("id", p.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("salary_payments").insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["salary-payments"] }); setEditing(null); toast.success("Salary saved"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("salary_payments")
+        .update({ deleted_at: new Date().toISOString() }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["salary-payments"] }); toast.success("Removed"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const doPrint = (r: any) =>
+    printPayslip({
+      payslipNo: r.payslip_no,
+      month: r.month,
+      schoolName: school?.school_name ?? "School",
+      schoolAddress: school?.school_address,
+      schoolLogo: school?.school_logo,
+      employeeName: nameOf(r),
+      designation: designationOf(r),
+      employeeType: r.teacher_id ? "Teacher" : "Staff",
+      basic: Number(r.basic || 0),
+      bonus: Number(r.bonus || 0),
+      advance: Number(r.advance || 0),
+      deduction: Number(r.deduction || 0),
+      net: Number(r.net || 0),
+      status: r.status,
+      paidOn: r.paid_on,
+      accountName: (accounts as any[]).find((a) => a.id === r.account_id)?.name,
+      notes: r.notes,
+    });
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <Label>Month</Label>
+          <Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-44" />
+        </div>
+        {canManage && (
+          <Button onClick={() => setEditing({ month, status: "pending", basic: 0, bonus: 0, advance: 0, deduction: 0 })}>
+            <Plus className="h-4 w-4 mr-2" /> New Salary Entry
+          </Button>
+        )}
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="bg-card border rounded-xl p-4">
+          <p className="text-xs text-muted-foreground">Entries</p>
+          <p className="text-2xl font-bold">{totals.count}</p>
+        </div>
+        <div className="bg-card border rounded-xl p-4">
+          <p className="text-xs text-muted-foreground">Paid this month</p>
+          <p className="text-2xl font-bold">{totals.paid.toLocaleString()}</p>
+        </div>
+        <div className="bg-card border rounded-xl p-4">
+          <p className="text-xs text-muted-foreground">Pending</p>
+          <p className="text-2xl font-bold text-destructive">{totals.pending.toLocaleString()}</p>
+        </div>
+      </div>
+
+      <div className="bg-card border rounded-xl overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50 text-left">
+            <tr>
+              <th className="p-3">Payslip</th><th className="p-3">Name</th><th className="p-3">Type</th>
+              <th className="p-3 text-right">Basic</th><th className="p-3 text-right">Bonus</th>
+              <th className="p-3 text-right">Advance</th><th className="p-3 text-right">Deduction</th>
+              <th className="p-3 text-right">Net</th><th className="p-3">Status</th><th className="p-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {rows.length === 0 && (
+              <tr><td colSpan={10} className="p-8 text-center text-muted-foreground">No salary entries for this month.</td></tr>
+            )}
+            {rows.map((r: any) => (
+              <tr key={r.id}>
+                <td className="p-3 font-mono text-xs">{r.payslip_no || "—"}</td>
+                <td className="p-3 font-medium">{nameOf(r)}</td>
+                <td className="p-3">{r.teacher_id ? "Teacher" : "Staff"}</td>
+                <td className="p-3 text-right">{Number(r.basic).toLocaleString()}</td>
+                <td className="p-3 text-right">{Number(r.bonus).toLocaleString()}</td>
+                <td className="p-3 text-right">{Number(r.advance).toLocaleString()}</td>
+                <td className="p-3 text-right">{Number(r.deduction).toLocaleString()}</td>
+                <td className="p-3 text-right font-semibold">{Number(r.net).toLocaleString()}</td>
+                <td className="p-3">
+                  <Badge variant={r.status === "paid" ? "default" : "outline"}>{r.status}</Badge>
+                </td>
+                <td className="p-3 text-right whitespace-nowrap">
+                  <Button variant="ghost" size="icon" onClick={() => doPrint(r)}><Printer className="h-4 w-4" /></Button>
+                  {canManage && (
+                    <>
+                      <Button variant="ghost" size="icon" onClick={() => setEditing({ ...r, person: r.teacher_id ? `t:${r.teacher_id}` : `s:${r.staff_id}` })}>
+                        <Wallet className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => del.mutate(r.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{editing?.id ? "Edit Salary" : "New Salary Entry"}</DialogTitle></DialogHeader>
+          {editing && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="sm:col-span-2">
+                <Label>Teacher / Staff</Label>
+                <Select value={editing.person || ""} onValueChange={(v) => setEditing({ ...editing, person: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select employee" /></SelectTrigger>
+                  <SelectContent>
+                    {(teachers as any[]).map((t) => <SelectItem key={t.id} value={`t:${t.id}`}>👨‍🏫 {t.teacher_name}</SelectItem>)}
+                    {(staff as any[]).map((s) => <SelectItem key={s.id} value={`s:${s.id}`}>🧑‍💼 {s.staff_name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>Month</Label><Input type="month" value={editing.month || month} onChange={(e) => setEditing({ ...editing, month: e.target.value })} /></div>
+              <div>
+                <Label>Status</Label>
+                <Select value={editing.status || "pending"} onValueChange={(v) => setEditing({ ...editing, status: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">pending</SelectItem>
+                    <SelectItem value="paid">paid</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>Basic</Label><Input type="number" value={editing.basic ?? 0} onChange={(e) => setEditing({ ...editing, basic: e.target.value })} /></div>
+              <div><Label>Bonus / Allowance</Label><Input type="number" value={editing.bonus ?? 0} onChange={(e) => setEditing({ ...editing, bonus: e.target.value })} /></div>
+              <div><Label>Advance</Label><Input type="number" value={editing.advance ?? 0} onChange={(e) => setEditing({ ...editing, advance: e.target.value })} /></div>
+              <div><Label>Deduction</Label><Input type="number" value={editing.deduction ?? 0} onChange={(e) => setEditing({ ...editing, deduction: e.target.value })} /></div>
+              <div>
+                <Label>Pay From Account</Label>
+                <Select value={editing.account_id || ""} onValueChange={(v) => setEditing({ ...editing, account_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select account" /></SelectTrigger>
+                  <SelectContent>
+                    {(accounts as any[]).map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>Paid On</Label><Input type="date" value={editing.paid_on || ""} onChange={(e) => setEditing({ ...editing, paid_on: e.target.value })} /></div>
+              <div className="sm:col-span-2"><Label>Notes</Label><Input value={editing.notes || ""} onChange={(e) => setEditing({ ...editing, notes: e.target.value })} /></div>
+              <div className="sm:col-span-2 bg-muted/40 rounded-lg p-3 text-sm">
+                Net payable:{" "}
+                <span className="font-bold">
+                  {(Number(editing.basic || 0) + Number(editing.bonus || 0) - Number(editing.advance || 0) - Number(editing.deduction || 0)).toLocaleString()}
+                </span>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button onClick={() => save.mutate(editing)} disabled={save.isPending}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default SalaryTab;

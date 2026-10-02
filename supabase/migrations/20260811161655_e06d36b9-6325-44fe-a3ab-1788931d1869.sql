@@ -1,0 +1,1 @@
+ALTER TABLE public.subject_setups ADD COLUMN IF NOT EXISTS is_optional boolean NOT NULL DEFAULT false;

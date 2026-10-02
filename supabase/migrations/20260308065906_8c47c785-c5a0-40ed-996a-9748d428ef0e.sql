@@ -1,0 +1,13 @@
+
+-- Add new columns to schools table for SaaS management
+ALTER TABLE public.schools
+  ADD COLUMN IF NOT EXISTS eiin TEXT,
+  ADD COLUMN IF NOT EXISTS website TEXT,
+  ADD COLUMN IF NOT EXISTS plan_name TEXT NOT NULL DEFAULT 'free',
+  ADD COLUMN IF NOT EXISTS max_students INTEGER NOT NULL DEFAULT 100,
+  ADD COLUMN IF NOT EXISTS max_teachers INTEGER NOT NULL DEFAULT 20,
+  ADD COLUMN IF NOT EXISTS subscription_expiry DATE,
+  ADD COLUMN IF NOT EXISTS student_login_enabled BOOLEAN NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS teacher_login_enabled BOOLEAN NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS admin_name TEXT,
+  ADD COLUMN IF NOT EXISTS admin_email TEXT;

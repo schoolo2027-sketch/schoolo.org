@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded Base Box -->
+  <rect width="64" height="64" rx="14" fill="url(#grad)"/>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="12.5" fill="none" stroke="#334155" stroke-width="1.5"/>
+  
+  <!-- Graduation Cap / School Icon -->
+  <g transform="translate(12, 14)">
+    <!-- Mortarboard Top / Diamond -->
+    <path d="M20 3 L39 12 L20 21 L1 12 Z" fill="url(#gold)"/>
+    <path d="M20 5.5 L34.5 12 L20 18.5 L5.5 12 Z" fill="#fde68a" opacity="0.4"/>
+    
+    <!-- Cap Skull Base -->
+    <path d="M8 16.5 V25.5 C8 29.5 13.5 33 20 33 C26.5 33 32 29.5 32 25.5 V16.5" fill="#f59e0b" opacity="0.95"/>
+    <path d="M10 18 V24.5 C10 27.5 14.5 30.5 20 30.5 C25.5 30.5 30 27.5 30 24.5 V18" fill="#d97706"/>
+    
+    <!-- Tassel / Ribbon -->
+    <path d="M34 13.5 L36 17 L36.5 25.5" stroke="#fef08a" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <circle cx="36.5" cy="27" r="2" fill="#fbbf24"/>
+  </g>
+</svg>

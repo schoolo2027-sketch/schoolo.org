@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">schoolo</string>
+    <string name="title_activity_main">schoolo</string>
+    <string name="package_name">com.schoolo</string>
+    <string name="custom_url_scheme">com.schoolo</string>
+</resources>

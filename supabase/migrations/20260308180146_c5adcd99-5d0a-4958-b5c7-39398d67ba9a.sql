@@ -1,0 +1,1 @@
+ALTER TABLE public.schools DROP CONSTRAINT IF EXISTS schools_school_code_key;

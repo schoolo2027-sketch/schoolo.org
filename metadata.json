@@ -1,0 +1,6 @@
+{
+  "name": "schoolo.com",
+  "description": "Comprehensive multi-tenant school management platform for attendance, grading, accounts, notices, class scheduling, and academic administration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

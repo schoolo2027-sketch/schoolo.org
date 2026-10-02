@@ -1,0 +1,15 @@
+name = "schoolo-com"
+compatibility_date = "2024-09-01"
+pages_build_output_dir = "dist"
+
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+
+[vars]
+VITE_SUPABASE_URL = "https://tyitzbbzzzzasdsvxjdq.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_STp8FDW5yvBH4kHFM8Cj1w_6uV9TB24"
+VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5aXR6YmJ6enp6YXNkc3Z4amRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMTcxMzksImV4cCI6MjEwMzU5MzEzOX0.dciVlBjGveTlW4m-E46Zqzgzbp5s1l1m08T_V0xwbVI"
+VITE_SUPABASE_PROJECT_ID = "tyitzbbzzzzasdsvxjdq"
+
+

@@ -1,0 +1,1 @@
+drop policy if exists "Anyone can read platform assets" on storage.objects;

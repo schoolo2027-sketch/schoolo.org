@@ -1,0 +1,7 @@
+
+ALTER TABLE public.staff
+  ADD COLUMN IF NOT EXISTS can_manage_classes BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS can_manage_attendance BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS can_manage_homework BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS can_view_reports BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS can_use_ai_tools BOOLEAN NOT NULL DEFAULT false;

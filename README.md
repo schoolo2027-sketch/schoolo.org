@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Schoolo.org - School Management Platform
 
 A modern, comprehensive multi-tenant school management web application built with React, TypeScript, Tailwind CSS, Vite, and Supabase.
@@ -54,3 +55,6 @@ npm run dev
 # 3. Build for production
 npm run build
 ```
+=======
+# schoolo.org
+>>>>>>> 5cb9f9327d9ea0b1aff5ed5e656a8122a951b962

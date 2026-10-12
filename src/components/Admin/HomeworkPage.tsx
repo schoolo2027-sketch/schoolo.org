@@ -243,23 +243,23 @@ const HomeworkPage = () => {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
       {/* Header */}
-      <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="page-title">Homework</h1>
           <p className="page-description">Assign and track homework submissions.</p>
         </div>
         {canManage && (
-          <Button onClick={() => { setEditId(null); setForm(emptyForm); setDialogOpen(true); }} className="gap-2">
+          <Button onClick={() => { setEditId(null); setForm(emptyForm); setDialogOpen(true); }} className="gap-2 w-full sm:w-auto">
             <Plus className="h-4 w-4" /> Add Homework
           </Button>
         )}
       </div>
 
       {/* Filter Bar — matching Results page style */}
-      <div className="stat-card flex flex-col lg:flex-row lg:items-end gap-4 p-4">
-        <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="stat-card flex flex-col lg:flex-row lg:items-end gap-4 p-3.5 sm:p-4">
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
           <div className="space-y-1">
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Year</label>
             <Select value={filterYear || "all"} onValueChange={v => setFilterYear(v === "all" ? "" : v)}>

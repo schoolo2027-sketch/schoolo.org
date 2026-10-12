@@ -229,7 +229,7 @@ export default function AdmissionFormPage() {
   };
 
   return (
-    <div className="space-y-6 pb-16 print:p-0 print:space-y-0 print:pb-0">
+    <div className="space-y-4 sm:space-y-6 pb-16 print:p-0 print:space-y-0 print:pb-0 w-full max-w-full min-w-0 overflow-hidden">
       {/* ========================================================= */}
       {/* NO-PRINT: TOOLBAR & CONFIGURATION CONTROLS                */}
       {/* ========================================================= */}
@@ -609,7 +609,7 @@ export default function AdmissionFormPage() {
       {/* ========================================================= */}
       {/* PRINTABLE A4 PREVIEW CONTAINER                            */}
       {/* ========================================================= */}
-      <div className="w-full overflow-x-auto pb-8 scrollbar-thin">
+      <div className="w-full max-w-full min-w-0 overflow-x-auto pb-8 scrollbar-thin">
         <div
           className={`mx-auto transition-all ${
             zoomLevel === "fit" ? "max-w-[215mm] min-w-[320px]" : "w-max min-w-[215mm]"

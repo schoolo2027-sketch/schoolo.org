@@ -24,18 +24,18 @@ const StatCard = ({ title, value, icon: Icon, trend, trendUp, color, onClick }: 
       className={`stat-card animate-fade-in ${onClick ? "cursor-pointer hover:shadow-md transition-shadow" : ""}`}
       onClick={onClick}
     >
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground font-medium">{title}</p>
-          <p className="text-3xl font-bold font-heading mt-2 animate-count-up">{value}</p>
+      <div className="flex items-start justify-between gap-2 min-w-0">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium truncate">{title}</p>
+          <p className="text-2xl sm:text-3xl font-bold font-heading mt-1 sm:mt-2 animate-count-up truncate">{value}</p>
           {trend && (
-            <p className={`text-xs mt-2 font-medium ${trendUp ? "text-success" : "text-destructive"}`}>
+            <p className={`text-[11px] sm:text-xs mt-1 sm:mt-2 font-medium truncate ${trendUp ? "text-success" : "text-destructive"}`}>
               {trendUp ? "↑" : "↓"} {trend}
             </p>
           )}
         </div>
-        <div className={`stat-card-icon ${colorMap[color]}`}>
-          <Icon className="h-6 w-6" />
+        <div className={`stat-card-icon ${colorMap[color]} shrink-0`}>
+          <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
         </div>
       </div>
     </div>

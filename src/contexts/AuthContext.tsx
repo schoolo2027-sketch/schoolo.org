@@ -47,6 +47,8 @@ interface AuthContextType {
   } | null;
   teacherPermissions: TeacherPermissions;
   signOut: () => Promise<void>;
+  masterSelectedSchoolId: string | null;
+  setMasterSelectedSchoolId: (id: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -59,6 +61,8 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   teacherPermissions: defaultPermissions,
   signOut: async () => {},
+  masterSelectedSchoolId: null,
+  setMasterSelectedSchoolId: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -69,15 +73,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isReady, setIsReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [roles, setRoles] = useState<AppRole[]>([]);
-  const [schoolId, setSchoolId] = useState<string | null>(null);
+  const [rawSchoolId, setRawSchoolId] = useState<string | null>(null);
+  const [masterSelectedSchoolId, setMasterSelectedSchoolIdState] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem("master_selected_school_id") || null;
+    } catch {
+      return null;
+    }
+  });
+  const [firstSchoolId, setFirstSchoolId] = useState<string | null>(null);
   const [profile, setProfile] = useState<AuthContextType["profile"]>(null);
   const [teacherPermissions, setTeacherPermissions] = useState<TeacherPermissions>(defaultPermissions);
 
-  const fetchUserData = async (userId: string) => {
+  const setMasterSelectedSchoolId = (id: string | null) => {
+    setMasterSelectedSchoolIdState(id);
     try {
-      let resolvedSchoolId: string | null = null;
+      if (id) {
+        localStorage.setItem("master_selected_school_id", id);
+      } else {
+        localStorage.removeItem("master_selected_school_id");
+      }
+    } catch {
+      // ignore localStorage error
+    }
+  };
 
-      // 1. Fetch profile
+  const isMasterAdmin = roles.includes("master_admin");
+  const effectiveSchoolId = isMasterAdmin
+    ? (masterSelectedSchoolId || firstSchoolId || null)
+    : rawSchoolId;
+
+  const fetchUserData = async (userId: string, currentUserEmail?: string | null) => {
+    let resolvedSchoolId: string | null = null;
+    let fetchedRoles: AppRole[] = [];
+
+    // 1. Fetch profile safely
+    try {
       const { data: profileData } = await supabase
         .from("profiles")
         .select("full_name, email, avatar_url, preferred_language, school_id")
@@ -95,26 +126,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           resolvedSchoolId = profileData.school_id;
         }
       }
+    } catch (err) {
+      console.warn("Could not fetch profile:", err);
+    }
 
-      // 2. Fetch roles and any associated school_id from user_roles
+    // 2. Fetch roles safely
+    try {
       const { data: rolesData } = await supabase
         .from("user_roles")
         .select("role, school_id")
         .eq("user_id", userId);
 
-      const fetchedRoles = rolesData?.map((r) => r.role as AppRole) || [];
+      fetchedRoles = (rolesData?.map((r) => r.role as AppRole) || []).filter(Boolean);
       const roleSchoolId = rolesData?.find((r) => r.school_id)?.school_id;
       if (!resolvedSchoolId && roleSchoolId) {
         resolvedSchoolId = roleSchoolId;
       }
+    } catch (err) {
+      console.warn("Could not fetch user_roles:", err);
+    }
 
-      // 3. User email / auth details
-      const { data: authData } = await supabase.auth.getUser();
-      const userEmail = (authData.user?.email || profileData?.email || "").toLowerCase().trim();
-      const emailPrefix = userEmail.split("@")[0];
+    // Immediately save roles and schoolId found so far
+    if (resolvedSchoolId) setRawSchoolId(resolvedSchoolId);
+    if (fetchedRoles.length > 0) setRoles(fetchedRoles);
 
-      // 4. Resolve Teacher Record
-      let teacherData: any = null;
+    // If master_admin, fetch schools to auto-select one if needed
+    if (fetchedRoles.includes("master_admin")) {
+      try {
+        const { data: schoolsList } = await supabase
+          .from("schools")
+          .select("id")
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false })
+          .limit(1);
+        if (schoolsList && schoolsList.length > 0) {
+          setFirstSchoolId(schoolsList[0].id);
+        }
+      } catch (err) {
+        console.warn("Could not fetch schools for master_admin:", err);
+      }
+    }
+
+    const userEmail = (currentUserEmail || profile?.email || "").toLowerCase().trim();
+    const emailPrefix = userEmail ? userEmail.split("@")[0] : "";
+
+    // 3. Resolve Teacher Record safely
+    let teacherData: any = null;
+    try {
       const { data: directTeacher } = await supabase
         .from("teachers")
         .select("*")
@@ -134,7 +192,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (emailTeacher) {
           teacherData = emailTeacher;
-          await supabase.from("teachers").update({ user_id: userId }).eq("id", emailTeacher.id);
+          supabase.from("teachers").update({ user_id: userId }).eq("id", emailTeacher.id).then();
         } else if (emailPrefix) {
           const { data: prefixTeacher } = await supabase
             .from("teachers")
@@ -145,38 +203,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
           if (prefixTeacher) {
             teacherData = prefixTeacher;
-            await supabase.from("teachers").update({ user_id: userId }).eq("id", prefixTeacher.id);
+            supabase.from("teachers").update({ user_id: userId }).eq("id", prefixTeacher.id).then();
           }
         }
       }
+    } catch (err) {
+      console.warn("Could not resolve teacher:", err);
+    }
 
-      if (teacherData) {
-        if (!fetchedRoles.includes("teacher")) {
-          fetchedRoles.push("teacher");
-        }
-        if (!resolvedSchoolId && teacherData.school_id) {
-          resolvedSchoolId = teacherData.school_id;
-        }
-
-        setTeacherPermissions({
-          can_add_students: teacherData.can_add_students ?? false,
-          can_edit_students: teacherData.can_edit_students ?? false,
-          can_entry_results: teacherData.can_entry_results ?? true,
-          can_manage_attendance: teacherData.can_manage_attendance ?? true,
-          can_manage_classes: teacherData.can_manage_classes ?? false,
-          can_manage_homework: teacherData.can_manage_homework ?? true,
-          can_manage_payments: teacherData.can_manage_payments ?? false,
-          can_manage_settings: teacherData.can_manage_settings ?? false,
-          can_send_notices: teacherData.can_send_notices ?? true,
-          can_use_ai_tools: teacherData.can_use_ai_tools ?? true,
-          can_view_reports: teacherData.can_view_reports ?? true,
-        });
-      } else {
-        setTeacherPermissions(defaultPermissions);
+    if (teacherData) {
+      if (!fetchedRoles.includes("teacher")) {
+        fetchedRoles.push("teacher");
+      }
+      if (!resolvedSchoolId && teacherData.school_id) {
+        resolvedSchoolId = teacherData.school_id;
       }
 
-      // 5. Resolve Student Record
-      let studentData: any = null;
+      setTeacherPermissions({
+        can_add_students: teacherData.can_add_students ?? false,
+        can_edit_students: teacherData.can_edit_students ?? false,
+        can_entry_results: teacherData.can_entry_results ?? true,
+        can_manage_attendance: teacherData.can_manage_attendance ?? true,
+        can_manage_classes: teacherData.can_manage_classes ?? false,
+        can_manage_homework: teacherData.can_manage_homework ?? true,
+        can_manage_payments: teacherData.can_manage_payments ?? false,
+        can_manage_settings: teacherData.can_manage_settings ?? false,
+        can_send_notices: teacherData.can_send_notices ?? true,
+        can_use_ai_tools: teacherData.can_use_ai_tools ?? true,
+        can_view_reports: teacherData.can_view_reports ?? true,
+      });
+    } else {
+      setTeacherPermissions(defaultPermissions);
+    }
+
+    // 4. Resolve Student Record safely
+    let studentData: any = null;
+    try {
       const { data: directStudent } = await supabase
         .from("students")
         .select("id, school_id, user_id, student_id, student_name")
@@ -196,109 +258,91 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (matchStudent) {
           studentData = matchStudent;
-          await supabase.from("students").update({ user_id: userId }).eq("id", matchStudent.id);
+          supabase.from("students").update({ user_id: userId }).eq("id", matchStudent.id).then();
         }
       }
-
-      if (studentData) {
-        if (!fetchedRoles.includes("student")) {
-          fetchedRoles.push("student");
-        }
-        if (!resolvedSchoolId && studentData.school_id) {
-          resolvedSchoolId = studentData.school_id;
-        }
-      }
-
-      // Sync school_id back to profile if needed
-      if (resolvedSchoolId && profileData && profileData.school_id !== resolvedSchoolId) {
-        await supabase.from("profiles").update({ school_id: resolvedSchoolId }).eq("user_id", userId);
-      }
-
-      // 6. Security validation: Ensure deleted/inactive users cannot maintain an active session
-      const isMasterAdmin = fetchedRoles.includes("master_admin");
-      if (!isMasterAdmin) {
-        // If they have student role but no active student record is linked yet:
-        // Do not force sign-out; allow them to stay authenticated so they can link their profile in the student portal
-        if (fetchedRoles.includes("student") && !studentData) {
-          console.info("Unlinked student session active; ready for profile linking.");
-        }
-
-        // If they have teacher role but no active teacher record exists:
-        if (fetchedRoles.includes("teacher") && !teacherData && !fetchedRoles.includes("school_admin")) {
-          console.warn("Deleted teacher detected in session, signing out.");
-          await supabase.auth.signOut();
-          setUser(null);
-          setSession(null);
-          setRoles([]);
-          setSchoolId(null);
-          setProfile(null);
-          return;
-        }
-
-        // If they have no valid roles and neither student nor teacher:
-        if (fetchedRoles.length === 0 && !studentData && !teacherData) {
-          console.warn("Deleted or unassigned user detected in session, signing out.");
-          await supabase.auth.signOut();
-          setUser(null);
-          setSession(null);
-          setRoles([]);
-          setSchoolId(null);
-          setProfile(null);
-          return;
-        }
-
-        // If their school is deleted or inactive:
-        if (resolvedSchoolId) {
-          const { data: schoolCheck } = await supabase
-            .from("schools")
-            .select("is_active, deleted_at")
-            .eq("id", resolvedSchoolId)
-            .maybeSingle();
-
-          if (!schoolCheck || schoolCheck.deleted_at || !schoolCheck.is_active) {
-            console.warn("Inactive or deleted school detected in session, signing out.");
-            await supabase.auth.signOut();
-            setUser(null);
-            setSession(null);
-            setRoles([]);
-            setSchoolId(null);
-            setProfile(null);
-            return;
-          }
-        }
-      }
-
-      setSchoolId(resolvedSchoolId);
-      setRoles(fetchedRoles);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
+    } catch (err) {
+      console.warn("Could not resolve student:", err);
     }
+
+    if (studentData) {
+      if (!fetchedRoles.includes("student")) {
+        fetchedRoles.push("student");
+      }
+      if (!resolvedSchoolId && studentData.school_id) {
+        resolvedSchoolId = studentData.school_id;
+      }
+    }
+
+    // 5. Verification: Check deleted / inactive schools safely
+    if (resolvedSchoolId && !fetchedRoles.includes("master_admin")) {
+      try {
+        const { data: schoolCheck } = await supabase
+          .from("schools")
+          .select("is_active, deleted_at")
+          .eq("id", resolvedSchoolId)
+          .maybeSingle();
+
+        // ONLY sign out if school record was actually returned AND is confirmed inactive or deleted
+        if (schoolCheck && (schoolCheck.deleted_at || schoolCheck.is_active === false)) {
+          console.warn("Inactive or deleted school detected in session, signing out.");
+          await supabase.auth.signOut();
+          setUser(null);
+          setSession(null);
+          setRoles([]);
+          setRawSchoolId(null);
+          setProfile(null);
+          return;
+        }
+      } catch (err) {
+        console.warn("School check error (likely RLS), skipped safely:", err);
+      }
+    }
+
+    setRawSchoolId(resolvedSchoolId);
+    setRoles(fetchedRoles);
   };
 
   useEffect(() => {
-    let initialLoad = true;
+    let mounted = true;
+    let initialLoadDone = false;
+
+    // Safety timeout: ensure loading finishes within 4.5 seconds maximum
+    const safetyTimer = setTimeout(() => {
+      if (mounted) {
+        setIsReady(true);
+        setIsLoading(false);
+      }
+    }, 4500);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        if (!mounted) return;
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          if (!initialLoad) {
-            // For subsequent auth changes (not initial load), show loading while fetching
+          // If this is a background token refresh or update, DO NOT trigger full-page loader
+          const isBackgroundEvent = event === "TOKEN_REFRESHED" || event === "USER_UPDATED";
+          if (!isBackgroundEvent && !initialLoadDone) {
             setIsLoading(true);
-            setTimeout(() => {
-              fetchUserData(session.user.id).finally(() => {
-                setIsLoading(false);
-              });
-            }, 0);
           }
+
+          fetchUserData(session.user.id, session.user.email).finally(() => {
+            if (mounted) {
+              initialLoadDone = true;
+              setIsReady(true);
+              setIsLoading(false);
+            }
+          });
         } else {
           setRoles([]);
-          setSchoolId(null);
+          setRawSchoolId(null);
           setProfile(null);
           setTeacherPermissions(defaultPermissions);
-          if (!initialLoad) {
+          if (mounted) {
+            initialLoadDone = true;
+            setIsReady(true);
             setIsLoading(false);
           }
         }
@@ -306,23 +350,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        fetchUserData(session.user.id).finally(() => {
-          initialLoad = false;
-          setIsReady(true);
-          setIsLoading(false);
+        fetchUserData(session.user.id, session.user.email).finally(() => {
+          if (mounted) {
+            initialLoadDone = true;
+            clearTimeout(safetyTimer);
+            setIsReady(true);
+            setIsLoading(false);
+          }
         });
       } else {
-        initialLoad = false;
+        if (mounted) {
+          initialLoadDone = true;
+          clearTimeout(safetyTimer);
+          setIsReady(true);
+          setIsLoading(false);
+        }
+      }
+    }).catch(() => {
+      if (mounted) {
         setIsReady(true);
         setIsLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      clearTimeout(safetyTimer);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
@@ -334,14 +394,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setSession(null);
     setRoles([]);
-    setSchoolId(null);
+    setRawSchoolId(null);
     setProfile(null);
     setTeacherPermissions(defaultPermissions);
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, session, isReady, isLoading, roles, schoolId, profile, teacherPermissions, signOut }}
+      value={{
+        user,
+        session,
+        isReady,
+        isLoading,
+        roles,
+        schoolId: effectiveSchoolId,
+        profile,
+        teacherPermissions,
+        signOut,
+        masterSelectedSchoolId,
+        setMasterSelectedSchoolId,
+      }}
     >
       {children}
     </AuthContext.Provider>

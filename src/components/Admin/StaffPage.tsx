@@ -133,9 +133,9 @@ const StaffPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
       {/* Header */}
-      <div className="rounded-2xl bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/10 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="rounded-2xl bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/10 p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="page-title uppercase tracking-wide">Staff Management</h1>
           <p className="text-xs font-semibold uppercase tracking-widest text-primary">
@@ -143,7 +143,7 @@ const StaffPage = () => {
           </p>
         </div>
         {canManage && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button variant="outline" onClick={() => setImportOpen(true)} className="gap-2">
               <FileSpreadsheet className="h-4 w-4" /> Excel Import
             </Button>

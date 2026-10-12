@@ -121,7 +121,7 @@ const LoginPage = () => {
             .eq("id", adminSchoolId)
             .maybeSingle();
 
-          if (!schoolData || schoolData.deleted_at || !schoolData.is_active) {
+          if (schoolData && (schoolData.deleted_at || schoolData.is_active === false)) {
             await supabase.auth.signOut();
             setIsLoading(false);
             toast({
@@ -180,47 +180,18 @@ const LoginPage = () => {
         console.info("Student record not yet linked, proceeding to portal for self-linking.");
       }
 
-      // If user had a teacher role but teacher record is gone/inactive => DELETED!
+      // If user had a teacher role but teacher record is not found immediately:
+      // Allow them into the session so AuthContext can resolve and link their profile
       if (userRoles.includes("teacher") && !teacherRecord) {
-        await supabase.auth.signOut();
-        setIsLoading(false);
-        toast({
-          title: "Account Deleted",
-          description: "This teacher account has been deleted or deactivated. You cannot log in.",
-          variant: "destructive",
-        });
-        return;
+        console.info("Teacher record not directly matched on login, proceeding to allow AuthContext to resolve.");
       }
 
-      // If user had a staff role but staff record is gone/inactive => DELETED!
+      // If user had a staff role but staff record is not found immediately:
       if (userRoles.includes("staff") && !staffRecord) {
-        await supabase.auth.signOut();
-        setIsLoading(false);
-        toast({
-          title: "Account Deleted",
-          description: "This staff account has been deleted or deactivated. You cannot log in.",
-          variant: "destructive",
-        });
-        return;
+        console.info("Staff record not directly matched on login, proceeding to allow AuthContext to resolve.");
       }
 
-      // If user has NO active student, teacher, or staff record found at all:
-      if (!studentRecord && !teacherRecord && !staffRecord) {
-        if (userRoles.includes("student") || userRoles.length === 0) {
-          console.info("Unlinked user entering portal to link record.");
-        } else {
-          await supabase.auth.signOut();
-          setIsLoading(false);
-          toast({
-            title: "Account Not Found",
-            description: "This account has been deleted or is not registered. You cannot log in.",
-            variant: "destructive",
-          });
-          return;
-        }
-      }
-
-      // Check whether their associated school is active
+      // Check whether their associated school is active if a record is present
       const memberSchoolId = studentRecord?.school_id || teacherRecord?.school_id || staffRecord?.school_id;
       if (memberSchoolId) {
         const { data: schoolData } = await supabase
@@ -229,7 +200,7 @@ const LoginPage = () => {
           .eq("id", memberSchoolId)
           .maybeSingle();
 
-        if (!schoolData || schoolData.deleted_at || !schoolData.is_active) {
+        if (schoolData && (schoolData.deleted_at || schoolData.is_active === false)) {
           await supabase.auth.signOut();
           setIsLoading(false);
           toast({

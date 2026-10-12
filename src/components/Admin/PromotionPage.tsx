@@ -205,7 +205,7 @@ const PromotionPage = () => {
   const srcClassName = classes.find(c => c.id === srcClassId)?.class_name || "";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
       <div className="page-header">
         <h1 className="page-title">Student Promotion</h1>
         <p className="page-description">Promote students from one class to the next academic batch</p>

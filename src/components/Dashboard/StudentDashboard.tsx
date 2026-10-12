@@ -246,48 +246,48 @@ const StudentDashboard = () => {
   const upcomingHomeworkCount = homeworkList.filter((hw: any) => !hw.deadline || !isPast(new Date(hw.deadline))).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
       {/* =========================================================
           HERO BANNER: Student Identity & School Branding Card
       ========================================================= */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-blue-700 text-white shadow-lg p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-blue-700 text-white shadow-lg p-4 sm:p-6 min-w-0 max-w-full">
         {/* Subtle decorative circles */}
         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 -mb-20 w-48 h-48 rounded-full bg-accent/20 blur-xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 min-w-0">
           {/* Student Profile Info */}
-          <div className="flex items-center gap-4 sm:gap-6">
-            <Avatar className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border-3 border-white/80 shadow-md ring-4 ring-white/20">
+          <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+            <Avatar className="h-16 w-16 sm:h-24 sm:w-24 rounded-2xl border-3 border-white/80 shadow-md ring-4 ring-white/20 shrink-0">
               <AvatarImage src={photoUrl || undefined} className="object-cover" />
-              <AvatarFallback className="text-2xl font-bold bg-white text-primary">
+              <AvatarFallback className="text-xl sm:text-2xl font-bold bg-white text-primary">
                 {initials}
               </AvatarFallback>
             </Avatar>
 
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                <h1 className="text-lg sm:text-2xl font-bold text-white tracking-tight break-words">
                   {studentName}
                 </h1>
-                <Badge className="bg-white/20 hover:bg-white/30 text-white text-xs border-0 font-medium">
+                <Badge className="bg-white/20 hover:bg-white/30 text-white text-xs border-0 font-medium shrink-0">
                   {student?.is_active ? "Active Student" : "Inactive"}
                 </Badge>
               </div>
 
-              <p className="text-sm text-white/80 flex items-center gap-2">
+              <p className="text-xs sm:text-sm text-white/80 flex items-center gap-1.5 sm:gap-2 flex-wrap">
                 <GraduationCap className="h-4 w-4 shrink-0 text-white/90" />
                 <span>{className} • Sec: {sectionName} • Roll: {studentRoll}</span>
               </p>
 
-              <div className="flex items-center gap-3 text-xs text-white/75 font-mono pt-0.5">
+              <div className="flex items-center gap-2 sm:gap-3 text-xs text-white/75 pt-0.5 flex-wrap">
                 <span>ID: {studentIdNumber}</span>
                 <span>•</span>
                 <span className="capitalize">{shift} • {version}</span>
                 {student?.blood_group && (
                   <>
                     <span>•</span>
-                    <span className="bg-red-500/80 px-1.5 py-0.2 rounded text-[10px] text-white font-sans font-bold">
+                    <span className="bg-red-500/80 px-1.5 py-0.2 rounded text-[10px] text-white font-sans font-bold shrink-0">
                       {student.blood_group}
                     </span>
                   </>
@@ -297,7 +297,7 @@ const StudentDashboard = () => {
           </div>
 
           {/* Quick Action: Open Digital ID Card Modal & Edit Profile */}
-          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap w-full sm:w-auto">
             <Button
               onClick={() => setShowEditProfileModal(true)}
               variant="outline"
@@ -398,7 +398,7 @@ const StudentDashboard = () => {
           STUDENT WORKSPACE TABS & WIDGETS
       ========================================================= */}
       <Tabs defaultValue="homework" className="space-y-4">
-        <TabsList className="grid grid-cols-4 w-full max-w-xl">
+        <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full max-w-xl h-auto p-1 gap-1">
           <TabsTrigger value="homework" className="flex items-center gap-1.5 text-xs sm:text-sm">
             <BookOpen className="h-3.5 w-3.5" />
             Homework ({homeworkList.length})

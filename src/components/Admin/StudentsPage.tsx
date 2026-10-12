@@ -484,13 +484,13 @@ const StudentsPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
       <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="page-title">Students</h1>
           <p className="page-description">Manage student records, enrollment and profiles.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button variant="outline" onClick={handlePrint} className="gap-2">
             <Printer className="h-4 w-4" /> Print
           </Button>
@@ -507,13 +507,13 @@ const StudentsPage = () => {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+      <div className="flex flex-wrap gap-2 sm:gap-3">
+        <div className="relative flex-1 min-w-[160px] sm:min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search students..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
         <Select value={yearFilter} onValueChange={(v) => { setYearFilter(v); }}>
-          <SelectTrigger className="w-[120px]"><SelectValue placeholder="Year" /></SelectTrigger>
+          <SelectTrigger className="w-[110px] sm:w-[120px]"><SelectValue placeholder="Year" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Years</SelectItem>
             {Array.from({ length: 25 }, (_, i) => 2026 + i).map(y => (
@@ -522,7 +522,7 @@ const StudentsPage = () => {
           </SelectContent>
         </Select>
         <Select value={classFilter} onValueChange={(v) => { setClassFilter(v); setSectionFilter("all"); }}>
-          <SelectTrigger className="w-[140px]"><SelectValue placeholder="Class" /></SelectTrigger>
+          <SelectTrigger className="w-[120px] sm:w-[140px]"><SelectValue placeholder="Class" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Classes</SelectItem>
             {CLASSES.map(c => (
@@ -531,7 +531,7 @@ const StudentsPage = () => {
           </SelectContent>
         </Select>
         <Select value={shiftFilter} onValueChange={(v) => { setShiftFilter(v); }}>
-          <SelectTrigger className="w-[130px]"><SelectValue placeholder="Shift" /></SelectTrigger>
+          <SelectTrigger className="w-[110px] sm:w-[130px]"><SelectValue placeholder="Shift" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Shifts</SelectItem>
             {SHIFTS.map(s => (
@@ -540,7 +540,7 @@ const StudentsPage = () => {
           </SelectContent>
         </Select>
         <Select value={sectionFilter} onValueChange={setSectionFilter}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Section" /></SelectTrigger>
+          <SelectTrigger className="w-[130px] sm:w-[160px]"><SelectValue placeholder="Section" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Sections</SelectItem>
             {sectionOptions.map(s => (
@@ -549,7 +549,7 @@ const StudentsPage = () => {
           </SelectContent>
         </Select>
         <Select value={versionFilter} onValueChange={(v) => { setVersionFilter(v); }}>
-          <SelectTrigger className="w-[130px]"><SelectValue placeholder="Version" /></SelectTrigger>
+          <SelectTrigger className="w-[110px] sm:w-[130px]"><SelectValue placeholder="Version" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Versions</SelectItem>
             {VERSIONS.map(v => (
@@ -571,7 +571,7 @@ const StudentsPage = () => {
       ) : (
         <div className="data-table">
           <div className="overflow-x-auto scrollbar-thin">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[650px] text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   <th className="text-left py-3 px-4 font-medium text-muted-foreground">Student</th>

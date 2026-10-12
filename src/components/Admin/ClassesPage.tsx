@@ -343,20 +343,20 @@ const ClassesPage = () => {
   const classConfiguredCount = classConfiguredSetups.length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold font-heading text-foreground tracking-tight flex items-center gap-2">
-            <Layers className="h-6 w-6 text-primary" /> Classes & Subject Setup
+          <h1 className="text-xl sm:text-2xl font-bold font-heading text-foreground tracking-tight flex items-center gap-2">
+            <Layers className="h-5 w-5 sm:h-6 sm:w-6 text-primary shrink-0" /> Classes & Subject Setup
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
             Manage academic classes, class sections, NCTB curriculum subject rules, and 4th/Optional subjects.
           </p>
         </div>
 
         {canManage && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               onClick={() => {
                 setEditingSubjectSetup({
@@ -390,12 +390,12 @@ const ClassesPage = () => {
       </div>
 
       {/* Main Mode Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5">
-        <TabsList className="bg-muted p-1 rounded-xl grid grid-cols-2 max-w-md h-10">
-          <TabsTrigger value="classes" className="rounded-lg text-xs font-semibold data-[state=active]:bg-background">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-5">
+        <TabsList className="bg-muted p-1 rounded-xl grid grid-cols-1 sm:grid-cols-2 w-full max-w-md h-auto gap-1">
+          <TabsTrigger value="classes" className="rounded-lg text-xs font-semibold py-2 data-[state=active]:bg-background">
             <Layers className="h-3.5 w-3.5 mr-1.5" /> Classes & Sections
           </TabsTrigger>
-          <TabsTrigger value="subjects" className="rounded-lg text-xs font-semibold data-[state=active]:bg-background">
+          <TabsTrigger value="subjects" className="rounded-lg text-xs font-semibold py-2 data-[state=active]:bg-background">
             <BookOpen className="h-3.5 w-3.5 mr-1.5" /> Subject Setup (Play – Class 12)
           </TabsTrigger>
         </TabsList>

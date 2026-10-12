@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,19 +18,31 @@ import TeacherDashboard from "@/components/Dashboard/TeacherDashboard";
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 const DashboardHome = () => {
-  const { schoolId: userSchoolId, roles, profile } = useAuth();
+  const { schoolId: userSchoolId, roles, profile, masterSelectedSchoolId, setMasterSelectedSchoolId } = useAuth();
   const { t } = useLanguage();
   const isStudent = roles.includes("student");
   const isTeacher = roles.includes("teacher") && !roles.includes("school_admin") && !roles.includes("master_admin");
   const isMasterAdmin = roles.includes("master_admin");
-  const [selectedSchoolId, setSelectedSchoolId] = useState<string>("all");
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>(masterSelectedSchoolId || "all");
   const [feeFilter, setFeeFilter] = useState<string>("all"); // "all", "monthly", "yearly", or specific month like "2026-01"
   const [feeYear, setFeeYear] = useState<string>(String(new Date().getFullYear()));
   const [feeMonth, setFeeMonth] = useState<string>(String(new Date().getMonth()));
 
+  // Keep in sync with masterSelectedSchoolId if updated elsewhere (e.g. TopBar)
+  useEffect(() => {
+    if (isMasterAdmin && masterSelectedSchoolId) {
+      setSelectedSchoolId(masterSelectedSchoolId);
+    }
+  }, [isMasterAdmin, masterSelectedSchoolId]);
+
   const effectiveSchoolId = isMasterAdmin
     ? (selectedSchoolId === "all" ? null : selectedSchoolId)
     : userSchoolId;
+
+  const handleSchoolChange = (val: string) => {
+    setSelectedSchoolId(val);
+    setMasterSelectedSchoolId(val === "all" ? null : val);
+  };
 
   const { data: schools = [] } = useQuery({
     queryKey: ["dash-schools-list"],
@@ -152,13 +164,15 @@ const DashboardHome = () => {
   if (isStudent) return <StudentDashboard />;
   if (isTeacher) return <TeacherDashboard />;
 
-  const isAdmin = roles.includes("school_admin") || roles.includes("sub_admin");
+  const isAdmin = roles.includes("school_admin") || roles.includes("sub_admin") || roles.includes("accounts");
   if (!isMasterAdmin && !isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 space-y-4">
-        <h2 className="text-xl font-semibold">Account Inactive or Deleted</h2>
+        <h2 className="text-xl font-semibold">Account Portal</h2>
         <p className="text-muted-foreground text-sm max-w-md">
-          Your account is not active or does not have access to this portal. Please contact your administrator.
+          {roles.length === 0
+            ? "Your account profile is currently syncing with the school database. Please refresh or select a role."
+            : "Your account is not active or does not have access to this portal. Please contact your administrator."}
         </p>
       </div>
     );
@@ -169,16 +183,16 @@ const DashboardHome = () => {
     : t("dashboard.welcomeGeneric");
 
   return (
-    <div className="space-y-6">
-      <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
+      <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 max-w-full">
+        <div className="min-w-0">
           <h1 className="page-title">{t("dashboard.title")}</h1>
           <p className="page-description">{greeting} {t("dashboard.overview")}</p>
         </div>
         {isMasterAdmin && (
-          <Select value={selectedSchoolId} onValueChange={setSelectedSchoolId}>
-            <SelectTrigger className="w-[260px]">
-              <School className="h-4 w-4 mr-2 text-muted-foreground" />
+          <Select value={selectedSchoolId} onValueChange={handleSchoolChange}>
+            <SelectTrigger className="w-full sm:w-[260px]">
+              <School className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
               <SelectValue placeholder={t("dashboard.selectSchool")} />
             </SelectTrigger>
             <SelectContent>
@@ -191,7 +205,7 @@ const DashboardHome = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {isMasterAdmin && selectedSchoolId === "all" && (
           <>
             <StatCard title={t("dashboard.totalSchools")} value={schoolCount} icon={School} color="warning" />
@@ -207,10 +221,10 @@ const DashboardHome = () => {
 
       {/* Fee Dashboard - for school admins */}
       {!isMasterAdmin && (
-        <div className="stat-card p-5 space-y-4">
+        <div className="stat-card p-4 sm:p-5 space-y-4 min-w-0 overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h2 className="font-semibold font-heading text-lg flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-primary" /> Fee Overview
+              <CreditCard className="h-5 w-5 text-primary shrink-0" /> Fee Overview
             </h2>
             <div className="flex gap-2 flex-wrap">
               <Select value={feeFilter} onValueChange={setFeeFilter}>
@@ -245,7 +259,7 @@ const DashboardHome = () => {
               )}
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div className="rounded-xl border border-border p-4 text-center">
               <div className="text-2xl font-bold text-foreground">৳{(feeData?.totalFee || 0).toLocaleString()}</div>
               <div className="text-xs text-muted-foreground font-medium mt-1">Total Fee</div>
@@ -264,20 +278,20 @@ const DashboardHome = () => {
 
       {!isMasterAdmin && (
         <>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="lg:col-span-2 min-w-0 overflow-hidden">
               <AttendanceChart />
             </div>
-            <div>
+            <div className="min-w-0 overflow-hidden">
               <QuickActions />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="lg:col-span-2 min-w-0 overflow-hidden">
               <RecentStudentsTable />
             </div>
-            <div>
+            <div className="min-w-0 overflow-hidden">
               <RecentNotices />
             </div>
           </div>

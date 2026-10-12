@@ -605,7 +605,7 @@ const AttendancePage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6 w-full max-w-full min-w-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
@@ -614,7 +614,7 @@ const AttendancePage = () => {
             Monitor {activeTab} Attendance
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {canManage && viewMode === "daily" && (
             <Button onClick={() => setTakingAttendance(true)} className="gap-2">
               <Plus className="h-4 w-4" /> Take Attendance
@@ -631,20 +631,20 @@ const AttendancePage = () => {
       </div>
 
       {/* Tabs */}
-      <div className="inline-flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+      <div className="flex flex-wrap items-center gap-1 bg-muted/50 rounded-lg p-1 max-w-full">
         {allowedTabs.map(tab => {
           const Icon = tab.icon;
           return (
             <button
               key={tab.key}
               onClick={() => { setActiveTab(tab.key); setTakingAttendance(false); setSelectedUserId(""); }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                 activeTab === tab.key
                   ? "bg-background text-primary shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-4 w-4 shrink-0" />
               {tab.label}
             </button>
           );
@@ -652,7 +652,7 @@ const AttendancePage = () => {
       </div>
 
       {/* View Mode Selector */}
-      <div className="inline-flex items-center gap-1 bg-muted/30 rounded-lg p-1">
+      <div className="flex flex-wrap items-center gap-1 bg-muted/30 rounded-lg p-1 max-w-full">
         {([
           { key: "daily" as ViewMode, label: "Daily" },
           { key: "monthly" as ViewMode, label: "Monthly" },
@@ -661,7 +661,7 @@ const AttendancePage = () => {
           <button
             key={v.key}
             onClick={() => { setViewMode(v.key); setTakingAttendance(false); }}
-            className={`px-4 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors ${
+            className={`px-3 sm:px-4 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors ${
               viewMode === v.key ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -673,7 +673,7 @@ const AttendancePage = () => {
       {/* Filters */}
       {activeTab === "students" ? (
         <div className="space-y-3">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             {viewMode === "daily" && (
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Date</label>
@@ -724,7 +724,7 @@ const AttendancePage = () => {
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Section</label>
               <Select value={selectedSection || "all"} onValueChange={(v) => setSelectedSection(v === "all" ? "" : v)}>
@@ -736,7 +736,7 @@ const AttendancePage = () => {
               </Select>
             </div>
             {viewMode === "user" && (
-              <div className="space-y-1.5 col-span-2">
+              <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Select Student</label>
                 <Select value={selectedUserId} onValueChange={setSelectedUserId}>
                   <SelectTrigger><SelectValue placeholder="Choose a student" /></SelectTrigger>
@@ -776,7 +776,7 @@ const AttendancePage = () => {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {viewMode === "daily" && (
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Date</label>
@@ -879,22 +879,22 @@ const AttendancePage = () => {
                   const status = attendance[item.id] || "present";
                   const initial = item.name.charAt(0).toUpperCase();
                   return (
-                    <div key={item.id} className="flex items-center justify-between rounded-xl border border-border bg-background p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">
+                    <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-border bg-background p-3 sm:p-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold shrink-0">
                           {initial}
                         </div>
-                        <div>
-                          <p className="text-sm font-bold uppercase tracking-wide">{item.name}</p>
-                          <p className="text-xs text-muted-foreground">{item.label}</p>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold uppercase tracking-wide truncate">{item.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{item.label}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 sm:gap-2 self-end sm:self-auto shrink-0 flex-wrap">
                         {(["present", "late", "absent"] as AttendanceStatus[]).map((s) => (
                           <button
                             key={s}
                             onClick={() => setAttendance(prev => ({ ...prev, [item.id]: s }))}
-                            className={`px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider border transition-colors ${
+                            className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider border transition-colors ${
                               status === s
                                 ? s === "present" ? "bg-success/15 text-success border-success/40"
                                 : s === "late" ? "bg-warning/15 text-warning border-warning/40"

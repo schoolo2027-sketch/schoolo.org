@@ -171,13 +171,13 @@ const TeachersPage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
+      <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="page-title">Teachers</h1>
           <p className="page-description">Manage teacher profiles and assignments.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button variant="outline" onClick={handlePrint} className="gap-2">
             <Printer className="h-4 w-4" /> Print
           </Button>

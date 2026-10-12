@@ -137,26 +137,34 @@ const NoticesPage = () => {
   const { data: notices = [], isLoading } = useQuery({
     queryKey: ["notices", schoolId, isMasterAdmin, user?.id],
     queryFn: async () => {
-      let query = supabase.from("notices").select("*").order("created_at", { ascending: false });
-      if (isMasterAdmin) {
-        // Master admin only sees notices they sent
-        if (user?.id) query = query.eq("posted_by", user.id);
-      } else if (schoolId) {
-        // Show only notices belonging to this school, or broadcasts that target this school
-        query = query.or(`school_id.eq.${schoolId},and(is_broadcast.eq.true),and(target_schools.cs.{${schoolId}})`);
+      try {
+        let query = supabase.from("notices").select("*").order("created_at", { ascending: false });
+        if (isMasterAdmin) {
+          // Master admin only sees notices they sent
+          if (user?.id) query = query.eq("posted_by", user.id);
+        } else if (schoolId) {
+          // Show notices belonging to this school, or broadcasts
+          query = query.or(`school_id.eq.${schoolId},school_id.is.null,is_broadcast.eq.true`);
+        }
+        const { data, error } = await query;
+        if (error) {
+          console.warn("Notices query warning:", error.message);
+          return [];
+        }
+        // For non-master users, filter broadcasts to only show those that actually target their school
+        if (!isMasterAdmin && schoolId && data) {
+          return data.filter((n: any) => {
+            if (n.school_id === schoolId) return true;
+            if (n.is_broadcast && (!n.target_schools || n.target_schools.length === 0)) return true;
+            if (Array.isArray(n.target_schools) && n.target_schools.includes(schoolId)) return true;
+            return false;
+          });
+        }
+        return data || [];
+      } catch (e) {
+        console.warn("Failed to fetch notices:", e);
+        return [];
       }
-      const { data, error } = await query;
-      if (error) throw error;
-      // For non-master users, filter broadcasts to only show those that actually target their school
-      if (!isMasterAdmin && schoolId && data) {
-        return data.filter((n: any) => {
-          if (n.school_id === schoolId) return true;
-          if (n.is_broadcast && (!n.target_schools || n.target_schools.length === 0)) return true;
-          if (n.target_schools && n.target_schools.includes(schoolId)) return true;
-          return false;
-        });
-      }
-      return data;
     },
   });
 
@@ -366,7 +374,7 @@ const NoticesPage = () => {
   const filtered = notices.filter((n: any) => n.title.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
       <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="page-title">Notices</h1>

@@ -574,7 +574,7 @@ const IDCardGenerator = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
       {/* Print CSS styles to guarantee flawless PVC/A4 card output */}
       <style>{`
         @media print {
@@ -613,21 +613,21 @@ const IDCardGenerator = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5 no-print">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Shield className="h-6 w-6 text-primary" />
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+            <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-primary shrink-0" />
             {isBn ? "আইডি কার্ড জেনারেটর" : "ID Card Generator"}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             {isBn
               ? "শিক্ষার্থী, শিক্ষক ও কর্মচারীদের জন্য প্রফেশনাল পিভিসি স্ট্যান্ডার্ড আইডি কার্ড তৈরি ও প্রিন্ট করুন"
               : "Generate and print professional PVC standard identity cards for students, teachers, and staff"}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             onClick={handlePrint}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 shadow-sm font-semibold"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 shadow-sm font-semibold text-xs sm:text-sm"
           >
             <Printer className="h-4 w-4" />
             {isBn
@@ -641,7 +641,7 @@ const IDCardGenerator = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 no-print">
         {/* Left Side: Category Tabs & List (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="bg-card rounded-xl border border-border p-4 shadow-sm space-y-4">
+          <div className="bg-card rounded-xl border border-border p-3 sm:p-4 shadow-sm space-y-4">
             {/* Category Tabs */}
             <Tabs
               value={activeTab}
@@ -650,7 +650,7 @@ const IDCardGenerator = () => {
                 setSelectedIds([]);
               }}
             >
-              <TabsList className="grid grid-cols-3 w-full">
+              <TabsList className="grid grid-cols-1 sm:grid-cols-3 w-full h-auto p-1 gap-1">
                 <TabsTrigger value="student" className="flex items-center gap-2">
                   <GraduationCap className="h-4 w-4" />
                   {isBn ? `শিক্ষার্থী (${students.length})` : `Students (${students.length})`}
@@ -941,7 +941,7 @@ const IDCardGenerator = () => {
           PRINTABLE AREA (A4 Standard Grid)
           Only visible when printing or in print preview
       ========================================== */}
-      <div id="id-card-printable-area" className="bg-white p-4 rounded-xl border border-slate-200 mt-6">
+      <div id="id-card-printable-area" className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 mt-6 w-full max-w-full min-w-0 overflow-x-auto">
         <div className="no-print mb-4 flex items-center justify-between pb-3 border-b border-slate-200">
           <div>
             <h3 className="font-bold text-slate-900 text-base">

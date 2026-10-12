@@ -252,8 +252,8 @@ const SettingsPage = () => {
         </p>
       </div>
 
-      <Tabs defaultValue={isMasterAdmin ? "branding" : "school"} className="w-full">
-        <TabsList>
+      <Tabs defaultValue={isMasterAdmin ? "branding" : "school"} className="w-full max-w-full min-w-0">
+        <TabsList className="w-full max-w-full flex flex-wrap h-auto p-1 gap-1">
           {isMasterAdmin && <TabsTrigger value="branding">🎨 Branding</TabsTrigger>}
           {isMasterAdmin && <TabsTrigger value="platform">Platform</TabsTrigger>}
           {isSchoolAdmin && <TabsTrigger value="school">School Profile</TabsTrigger>}

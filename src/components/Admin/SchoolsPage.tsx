@@ -377,19 +377,19 @@ const SchoolsPage = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
+      <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="page-title">Schools</h1>
           <p className="page-description">Manage all schools on the platform.</p>
         </div>
-        <Button onClick={() => { setEditId(null); setForm(emptySchoolForm); setDialogOpen(true); }} className="gap-2">
+        <Button onClick={() => { setEditId(null); setForm(emptySchoolForm); setDialogOpen(true); }} className="gap-2 w-full sm:w-auto">
           <Plus className="h-4 w-4" /> Add School
         </Button>
       </div>
 
-      <Tabs value={viewTab} onValueChange={setViewTab}>
-        <TabsList>
+      <Tabs value={viewTab} onValueChange={setViewTab} className="w-full max-w-full min-w-0">
+        <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:inline-flex h-auto p-1 gap-1">
           <TabsTrigger value="active">Active ({schools.length})</TabsTrigger>
           <TabsTrigger value="trash">Trash ({deletedSchools.length})</TabsTrigger>
         </TabsList>

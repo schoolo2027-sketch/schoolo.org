@@ -1861,18 +1861,18 @@ const ExamToolsPage = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
       {/* Header */}
-      <div className="bg-navy text-white p-6 rounded-2xl">
+      <div className="bg-navy text-white p-4 sm:p-6 rounded-2xl w-full max-w-full min-w-0">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold font-heading uppercase tracking-wide">{t("nav.exam")}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold font-heading uppercase tracking-wide">{t("nav.exam")}</h1>
             <p className="text-xs uppercase tracking-widest text-white/50">Admit Card, Seat Plan, Attendance Sheet, Duty Roster & Manual Sheets</p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
           <div className="space-y-1">
             <label className="text-[10px] font-semibold uppercase tracking-wider text-white/70">Exam Title</label>
             <Input className="h-9 bg-white/10 border-white/20 text-white" value={filters.examTitle}
@@ -1918,7 +1918,7 @@ const ExamToolsPage = () => {
 
       {/* Tabs Menu */}
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="grid grid-cols-2 md:grid-cols-5 h-auto p-1 gap-1">
+        <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 w-full h-auto p-1 gap-1">
           <TabsTrigger value="admitcard" className="gap-2 py-2.5"><IdCard className="h-4 w-4" /> Admit Card</TabsTrigger>
           <TabsTrigger value="seatplan" className="gap-2 py-2.5"><LayoutGrid className="h-4 w-4" /> Seat Plan Cards</TabsTrigger>
           <TabsTrigger value="attendance" className="gap-2 py-2.5"><ClipboardList className="h-4 w-4" /> Attendance Sheet</TabsTrigger>

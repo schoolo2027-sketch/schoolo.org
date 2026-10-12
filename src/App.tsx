@@ -73,27 +73,27 @@ const App = () => (
               {/* Protected routes with role-based access */}
               <Route path="/" element={protectedRoute(<MasterDashboard />)} />
               <Route path="/schools" element={protectedRoute(<SchoolsPage />, ["master_admin"])} />
-              <Route path="/students" element={protectedRoute(<StudentsPage />, ["school_admin", "sub_admin", "teacher"])} />
-              <Route path="/teachers" element={protectedRoute(<TeachersPage />, ["school_admin"])} />
-              <Route path="/staff" element={protectedRoute(<StaffPage />, ["school_admin"])} />
+              <Route path="/students" element={protectedRoute(<StudentsPage />, ["master_admin", "school_admin", "sub_admin", "teacher"])} />
+              <Route path="/teachers" element={protectedRoute(<TeachersPage />, ["master_admin", "school_admin"])} />
+              <Route path="/staff" element={protectedRoute(<StaffPage />, ["master_admin", "school_admin"])} />
               <Route path="/classes" element={protectedRoute(<ClassesPage />, ["master_admin", "school_admin", "sub_admin", "teacher"])} />
-              <Route path="/attendance" element={protectedRoute(<AttendancePage />, ["school_admin", "teacher"])} />
-              <Route path="/results" element={protectedRoute(<ResultsPage />, ["school_admin", "teacher"])} />
-              <Route path="/results/mark-entry" element={protectedRoute(<MarkEntryPage />, ["school_admin", "teacher"])} />
-              <Route path="/id-cards" element={protectedRoute(<IDCardGenerator />, ["school_admin", "sub_admin", "teacher"])} />
-              <Route path="/admission-form" element={protectedRoute(<AdmissionFormPage />, ["school_admin", "sub_admin", "teacher"])} />
-              <Route path="/homework" element={protectedRoute(<HomeworkPage />, ["school_admin", "teacher"])} />
+              <Route path="/attendance" element={protectedRoute(<AttendancePage />, ["master_admin", "school_admin", "teacher"])} />
+              <Route path="/results" element={protectedRoute(<ResultsPage />, ["master_admin", "school_admin", "teacher"])} />
+              <Route path="/results/mark-entry" element={protectedRoute(<MarkEntryPage />, ["master_admin", "school_admin", "teacher"])} />
+              <Route path="/id-cards" element={protectedRoute(<IDCardGenerator />, ["master_admin", "school_admin", "sub_admin", "teacher"])} />
+              <Route path="/admission-form" element={protectedRoute(<AdmissionFormPage />, ["master_admin", "school_admin", "sub_admin", "teacher"])} />
+              <Route path="/homework" element={protectedRoute(<HomeworkPage />, ["master_admin", "school_admin", "teacher"])} />
               <Route path="/my-payments" element={protectedRoute(<StudentPaymentPage />, ["student"])} />
               <Route path="/my-attendance" element={protectedRoute(<StudentAttendancePage />, ["student"])} />
               <Route path="/my-results" element={protectedRoute(<StudentResultsPage />, ["student"])} />
               <Route path="/my-homework" element={protectedRoute(<StudentHomeworkPage />, ["student"])} />
               <Route path="/notices" element={protectedRoute(<NoticesPage />, ["master_admin", "school_admin", "teacher", "student"])} />
               <Route path="/settings" element={protectedRoute(<SettingsPage />, ["master_admin", "school_admin"])} />
-              <Route path="/promotion" element={protectedRoute(<PromotionPage />, ["school_admin"])} />
-              <Route path="/exam" element={protectedRoute(<ExamToolsPage />, ["school_admin", "sub_admin", "teacher"])} />
+              <Route path="/promotion" element={protectedRoute(<PromotionPage />, ["master_admin", "school_admin"])} />
+              <Route path="/exam" element={protectedRoute(<ExamToolsPage />, ["master_admin", "school_admin", "sub_admin", "teacher"])} />
               <Route path="/reports" element={protectedRoute(<ReportsPage />, ["master_admin", "school_admin"])} />
               <Route path="/ai-tools" element={protectedRoute(<PlaceholderPage title="AI Question Paper & Notice" description="AI generated question papers, syllabus & notice generator" />, ["master_admin", "school_admin", "teacher"])} />
-              <Route path="/accounts" element={protectedRoute(<AccountsPage />, ["school_admin", "sub_admin", "accounts", "teacher"])} />
+              <Route path="/accounts" element={protectedRoute(<AccountsPage />, ["master_admin", "school_admin", "sub_admin", "accounts", "teacher"])} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>

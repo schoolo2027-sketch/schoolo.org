@@ -215,43 +215,43 @@ const TeacherDashboard = () => {
   const photoUrl = (teacher as any)?.photo_url || (teacher as any)?.photo || null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
       {/* =========================================================
           HERO BANNER: Teacher Profile & School Welcome
       ========================================================= */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white shadow-lg p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white shadow-lg p-4 sm:p-6 min-w-0 max-w-full">
         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-primary/20 blur-2xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 -mb-20 w-48 h-48 rounded-full bg-indigo-500/10 blur-xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 min-w-0">
           {/* Teacher Info */}
-          <div className="flex items-center gap-4 sm:gap-6">
-            <Avatar className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border-3 border-white/80 shadow-md ring-4 ring-primary/30">
+          <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+            <Avatar className="h-16 w-16 sm:h-24 sm:w-24 rounded-2xl border-3 border-white/80 shadow-md ring-4 ring-primary/30 shrink-0">
               <AvatarImage src={photoUrl || undefined} className="object-cover" />
-              <AvatarFallback className="text-2xl font-bold bg-primary text-white">
+              <AvatarFallback className="text-xl sm:text-2xl font-bold bg-primary text-white">
                 {initials}
               </AvatarFallback>
             </Avatar>
 
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                <h1 className="text-lg sm:text-2xl font-bold text-white tracking-tight break-words">
                   {teacherName}
                 </h1>
-                <Badge className="bg-primary/80 text-white text-xs border-0 font-medium">
+                <Badge className="bg-primary/80 text-white text-xs border-0 font-medium shrink-0">
                   {designation}
                 </Badge>
               </div>
 
-              <p className="text-sm text-slate-300 flex items-center gap-2">
+              <p className="text-xs sm:text-sm text-slate-300 flex items-center gap-1.5 sm:gap-2 flex-wrap">
                 <GraduationCap className="h-4 w-4 shrink-0 text-primary" />
-                <span>Department / Subject: {department}</span>
+                <span>Dept / Subject: {department}</span>
                 <span>•</span>
                 <span>ID: {teacherIdNumber}</span>
               </p>
 
-              <div className="flex items-center gap-3 text-xs text-slate-400 pt-0.5">
-                <span>{school?.school_name || "School Portal"}</span>
+              <div className="flex items-center gap-2 sm:gap-3 text-xs text-slate-400 pt-0.5 flex-wrap">
+                <span className="truncate max-w-[150px] sm:max-w-none">{school?.school_name || "School Portal"}</span>
                 {teacher?.phone && (
                   <>
                     <span>•</span>
@@ -261,7 +261,7 @@ const TeacherDashboard = () => {
                 {teacher?.blood_group && (
                   <>
                     <span>•</span>
-                    <span className="bg-red-500/80 px-1.5 py-0.2 rounded text-[10px] text-white font-bold">
+                    <span className="bg-red-500/80 px-1.5 py-0.2 rounded text-[10px] text-white font-bold shrink-0">
                       {teacher.blood_group}
                     </span>
                   </>
@@ -271,7 +271,7 @@ const TeacherDashboard = () => {
           </div>
 
           {/* Quick Actions in Hero */}
-          <div className="flex items-center gap-2 flex-wrap shrink-0">
+          <div className="flex items-center gap-2 flex-wrap shrink-0 w-full sm:w-auto">
             <Button
               onClick={() => setShowEditProfileModal(true)}
               variant="outline"

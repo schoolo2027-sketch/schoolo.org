@@ -42,9 +42,9 @@ const AttendanceChart = () => {
   });
 
   return (
-    <div className="stat-card">
-      <h3 className="font-semibold font-heading mb-4">Weekly Attendance</h3>
-      <div className="h-64">
+    <div className="stat-card min-w-0 max-w-full overflow-hidden">
+      <h3 className="font-semibold font-heading mb-4 text-base sm:text-lg">Weekly Attendance</h3>
+      <div className="h-64 w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} barGap={4}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
